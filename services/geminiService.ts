@@ -1,41 +1,23 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { GenerationSettings, VoiceOption } from "../types";
-import { VOICES, STYLES, ACCENTS } from "../constants";
+import { GenerationSettings, VoiceAnalysisResult } from "../types";
+import { VOICES } from "../constants";
 
-// Usamos la libreria estable que funcionaba ayer
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || '');
+// Priorizar la lectura de la clave desde el entorno
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || "";
+const genAI = new GoogleGenerativeAI(API_KEY);
 
-export async function generateSpeech(
-  text: string,
-  settings: GenerationSettings
-): Promise<string> {
-  const voice = VOICES.find((v) => v.id === settings.voiceId) || VOICES[0];
-  const accentDetail = ACCENTS.find((a) => a.label === settings.accent) || ACCENTS[0];
+export async function generateSpeech(text: string, settings: GenerationSettings): Promise<string> {
+  const voice = VOICES.find(v => v.id === settings.voiceId) || VOICES[0];
   
-  // Construct a prompt that guides the model on HOW to speak the text
-  let speedDesc = "normal";
-  if (settings.speed < 0.8) speedDesc = "muy lenta";
-  else if (settings.speed < 1.0) speedDesc = "lenta";
-  else if (settings.speed > 1.5) speedDesc = "muy rápida";
-  else if (settings.speed > 1.0) speedDesc = "rápida";
-
-  let pitchDesc = "normal";
-  if (settings.pitch < -5) pitchDesc = "muy grave y profundo";
-  else if (settings.pitch < 0) pitchDesc = "grave";
-  else if (settings.pitch > 5) pitchDesc = "muy agudo";
-  else if (settings.pitch > 0) pitchDesc = "agudo";
-
   const prompt = `
-    INSTRUCCIÓN DE IDENTIDAD VOCAL (CRÍTICA):
-    Actúa como un locutor profesional con IDENTIDAD FIJA.
-    - Nombre del Personaje: ${voice.name}
-    - Género: ${voice.gender === 'male' ? 'Masculino' : 'Femenino'}
-    - Estilo Emocional: ${settings.style}
-    - Velocidad: ${speedDesc}
-    - Tono: ${pitchDesc}
-
-    TEXTO A GENERAR:
-    "${text}"
+    Eres un narrador profesional con voz ${voice.gender === 'male' ? 'masculina' : 'femenina'}.
+    Tu estilo es ${settings.style}. Tu acento es ${settings.accent}.
+    
+    Genera una narración natural y profesional para el siguiente texto.
+    Usa un ritmo de ${settings.speed}x y un tono de ${settings.pitch}.
+    
+    TEXTO A NARRAR:
+    ${text}
   `;
 
   try {
@@ -47,18 +29,22 @@ export async function generateSpeech(
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
         responseModalities: ["audio" as any],
-      }
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: {
+              voiceName: voice.apiVoiceName
+            }
+          }
+        }
+      } as any
     });
 
     const response = await result.response;
-    console.log("Full Gemini Response:", JSON.stringify(response));
-    
     const audioPart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
     const base64Audio = audioPart?.inlineData?.data;
 
     if (!base64Audio) {
-      const debugInfo = response.candidates?.[0]?.content?.parts?.[0]?.text || "No hay texto tampoco";
-      throw new Error(`El modelo respondió pero no envió audio. Respuesta de texto: ${debugInfo}`);
+      throw new Error("Google aceptó el pago pero no devolvió el audio todavía. Prueba con un texto más corto.");
     }
 
     return base64Audio;
@@ -68,21 +54,14 @@ export async function generateSpeech(
   }
 }
 
-export interface VoiceAnalysisResult {
-  gender: 'male' | 'female';
-  pitch: number;
-  speed: number;
-  style: string;
-  accent: string;
-}
-
 export async function analyzeVoiceSample(base64Audio: string): Promise<VoiceAnalysisResult> {
   const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
   const result = await model.generateContent([
     { inlineData: { mimeType: 'audio/mp3', data: base64Audio } },
-    { text: "Analyze this voice sample and return JSON with: gender, pitch, speed, style, accent." }
+    { text: "Analyze this voice sample and return JSON with: gender, pitch, speed, style, accent. Return ONLY JSON." }
   ]);
-  
-  const text = result.response.text();
-  return JSON.parse(text) as VoiceAnalysisResult;
+  const response = await result.response;
+  const text = response.text();
+  const jsonMatch = text.match(/\{.*\}/s);
+  return jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
 }
