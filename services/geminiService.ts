@@ -51,7 +51,7 @@ export async function generateSpeech(
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-tts",
+      model: "gemini-2.0-flash",
       contents: {
         parts: [{ text: prompt }],
       },
