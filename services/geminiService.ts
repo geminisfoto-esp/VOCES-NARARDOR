@@ -52,7 +52,7 @@ export async function generateSpeech(
 
   try {
     const response = await ai.models.generateContent({
-      model: "models/gemini-1.5-flash",
+      model: "gemini-2.0-flash-exp",
       contents: {
         parts: [{ text: prompt }],
       },
@@ -77,7 +77,7 @@ export async function generateSpeech(
     return base64Audio;
   } catch (error: any) {
     console.error("Gemini TTS Error:", error);
-    const modelUsed = "models/gemini-1.5-flash";
+    const modelUsed = "gemini-2.0-flash-exp";
     if (error.status === 403) throw new Error("Acceso denegado (403). Tu clave API no tiene permisos para este modelo.");
     if (error.status === 404) throw new Error("Modelo no encontrado (404). El modelo '" + modelUsed + "' podria no estar disponible en tu region.");
     throw error;
@@ -94,7 +94,7 @@ export interface VoiceAnalysisResult {
 
 export async function analyzeVoiceSample(base64Audio: string): Promise<VoiceAnalysisResult> {
   const response = await ai.models.generateContent({
-    model: 'models/gemini-1.5-flash',
+    model: 'gemini-2.0-flash-exp',
     contents: {
       parts: [
         { inlineData: { mimeType: 'audio/mp3', data: base64Audio } },
