@@ -2,7 +2,7 @@ import { GenerationSettings, VoiceAnalysisResult } from "../types";
 import { VOICES } from "../constants";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || "";
-const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
+const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent";
 
 export async function generateSpeech(text: string, settings: GenerationSettings): Promise<string> {
   const voice = VOICES.find(v => v.id === settings.voiceId) || VOICES[0];
@@ -12,7 +12,7 @@ export async function generateSpeech(text: string, settings: GenerationSettings)
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ 
-        parts: [{ text: `Genera la narración de audio profesional para el siguiente texto, usando estilo narrador: ${text}` }] 
+        parts: [{ text: `Genera el audio para este texto (máxima calidad): ${text}` }] 
       }],
       generationConfig: {
         responseModalities: ["audio"],
@@ -23,7 +23,13 @@ export async function generateSpeech(text: string, settings: GenerationSettings)
             }
           }
         }
-      }
+      },
+      safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+      ]
     })
   });
 
