@@ -82,11 +82,11 @@ const App: React.FC = () => {
 
     } catch (error: any) {
       console.error("Gemini TTS Error:", error);
-      if (error.status === 403) alert("Error generando audio: Acceso denegado (403). Tu clave API no tiene permisos para este modelo.");
-      else if (error.status === 404) alert("Error generando audio: Modelo no encontrado (404). El modelo 'gemini-2.5-flash-preview-tts' podría no estar disponible en tu región.");
+      if (error.status === 403) alert("Error: Tu clave API no tiene permisos para este servicio de audio (403).");
+      else if (error.status === 404) alert("Error: El modelo de voz todavía no está disponible en tu cuenta (404). Espera unos minutos a que Google procese tu pago o revisa que la API esté habilitada.");
       else {
         const errorMsg = error.message || 'Error desconocido';
-        alert(`Error generando audio: ${errorMsg}\n\nVerifica tu conexión y que el modelo gemini-2.5 esté disponible para tu clave.`);
+        alert(`Error: ${errorMsg}\n\nPor favor, verifica que tu tarjeta esté activa en Google Cloud y prueba de nuevo.`);
       }
     } finally {
       setLoading(false);
