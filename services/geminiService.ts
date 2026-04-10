@@ -22,11 +22,11 @@ export async function generateSpeech(text: string, settings: GenerationSettings)
 
   try {
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-flash-latest", 
+      model: "models/gemini-1.5-flash-8b-001", 
     });
 
     const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      contents: [{ role: 'user', parts: [{ text: `Genera el audio para este texto: ${text}` }] }],
       generationConfig: {
         responseModalities: ["audio" as any],
         speechConfig: {
