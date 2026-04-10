@@ -1,0 +1,5 @@
+{
+  "name": "Voces Gemini Español",
+  "description": "Aplicación avanzada de texto a voz (TTS) utilizando Gemini 2.5. Permite seleccionar voces, acentos, estilos y efectos de sonido mediante etiquetas.",
+  "requestFramePermissions": []
+}
