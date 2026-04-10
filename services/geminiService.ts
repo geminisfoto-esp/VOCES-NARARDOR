@@ -1,23 +1,19 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GenerationSettings, VoiceAnalysisResult } from "../types";
 import { VOICES } from "../constants";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || "";
-const genAI = new GoogleGenerativeAI(API_KEY);
+const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
 export async function generateSpeech(text: string, settings: GenerationSettings): Promise<string> {
   const voice = VOICES.find(v => v.id === settings.voiceId) || VOICES[0];
   
-  try {
-    // Usamos el ID de produccion mas estable para audio hoy en Google
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-flash-latest", 
-    });
-
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: `Genera la narración de audio profesional para este texto: ${text}` }] }],
+  const response = await fetch(`${BASE_URL}?key=${API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text }] }],
       generationConfig: {
-        responseModalities: ["audio" as any],
+        responseModalities: ["audio"],
         speechConfig: {
           voiceConfig: {
             prebuiltVoiceConfig: {
@@ -25,42 +21,41 @@ export async function generateSpeech(text: string, settings: GenerationSettings)
             }
           }
         }
-      } as any
-    });
-
-    const response = await result.response;
-    
-    // Extracción de audio ultra-robusta (busca en todas las partes)
-    let base64Audio = "";
-    const parts = response.candidates?.[0]?.content?.parts || [];
-    
-    for (const part of parts) {
-      if (part.inlineData?.data) {
-        base64Audio = part.inlineData.data;
-        break;
       }
-    }
+    })
+  });
 
-    if (!base64Audio) {
-      // Si no hay audio, miramos si nos ha dado un mensaje de por qué
-      const textResponse = response.text() || "Sin respuesta de texto";
-      throw new Error(`Google respondió pero la IA dijo: "${textResponse}". Posiblemente por restricciones de seguridad o facturación activa.`);
-    }
-
-    return base64Audio;
-  } catch (error: any) {
-    console.error("DEBUG - Gemini Full Error:", error);
-    throw error;
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || "Error en la conexión con Google");
   }
+
+  const data = await response.json();
+  const base64Audio = data.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData)?.inlineData?.data;
+
+  if (!base64Audio) {
+    throw new Error("El modelo no devolvió audio. Verifica que tu cuenta tenga habilitada la opción de salida de audio.");
+  }
+
+  return base64Audio;
 }
 
 export async function analyzeVoiceSample(base64Audio: string): Promise<VoiceAnalysisResult> {
-  const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-  const result = await model.generateContent([
-    { inlineData: { mimeType: 'audio/mp3', data: base64Audio } },
-    { text: "Analyze this voice sample and return JSON: gender, pitch, speed, style, accent." }
-  ]);
-  const response = await result.response;
-  const jsonMatch = response.text().match(/\{.*\}/s);
-  return jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(response.text());
+  const response = await fetch(`${BASE_URL}?key=${API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [
+          { inlineData: { mimeType: "audio/mp3", data: base64Audio } },
+          { text: "Analyze this voice sample and return JSON: gender, pitch, speed, style, accent." }
+        ]
+      }]
+    })
+  });
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+  const jsonMatch = text.match(/\{.*\}/s);
+  return jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(text);
 }
