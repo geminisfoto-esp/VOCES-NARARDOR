@@ -13,7 +13,7 @@ export async function generateSpeech(text: string, settings: GenerationSettings)
   if (settings.speed < 0.8) speedDesc = "muy lenta";
   else if (settings.speed < 1.0) speedDesc = "lenta";
   else if (settings.speed > 1.5) speedDesc = "muy rápida";
-  else if (settings.speed > 1.0) speedDesc = "rápidat";
+  else if (settings.speed > 1.0) speedDesc = "rápida";
 
   let pitchDesc = "normal";
   if (settings.pitch < -5) pitchDesc = "muy grave y profundo";
