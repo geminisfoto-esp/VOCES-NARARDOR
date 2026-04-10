@@ -2,7 +2,7 @@ import { GenerationSettings, VoiceAnalysisResult } from "../types";
 import { VOICES } from "../constants";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || "";
-const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-native-audio-latest:generateContent";
+const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
 export async function generateSpeech(text: string, settings: GenerationSettings): Promise<string> {
   const voice = VOICES.find(v => v.id === settings.voiceId) || VOICES[0];
