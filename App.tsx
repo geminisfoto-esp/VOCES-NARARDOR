@@ -8,6 +8,7 @@ import { VOICES } from './constants';
 import { generateSpeech, analyzeVoiceSample } from './services/geminiService';
 import { decodeBase64, decodeAudioData, createWavBlob } from './utils/audioUtils';
 import { AudioWaveform, Wand2, Loader2, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
+import { AuthGuard } from './components/AuthGuard';
 
 const App: React.FC = () => {
   // Load persisted state
@@ -143,7 +144,8 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pb-20 selection:bg-indigo-500/30">
+    <AuthGuard>
+      <div className="min-h-screen pb-20 selection:bg-indigo-500/30">
       {/* Premium Header */}
       <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-indigo-500/10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -305,6 +307,7 @@ const App: React.FC = () => {
         </div>
       </footer>
     </div>
+    </AuthGuard>
   );
 };
 
