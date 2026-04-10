@@ -39,27 +39,23 @@ export async function generateSpeech(
   `;
 
   try {
-    // Usamos el modelo v1.5-flash que es el estandar oro para esta libreria
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-flash-latest",
-      generationConfig: {
-        responseModalities: ["audio" as any],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: {
-              voiceName: voice.apiVoiceName
-            }
-          }
-        }
-      } as any
+      model: "gemini-flash-latest", 
     });
 
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseModalities: ["audio" as any],
+      }
+    });
+
     const response = await result.response;
-    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    const audioPart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    const base64Audio = audioPart?.inlineData?.data;
 
     if (!base64Audio) {
-      throw new Error("No audio data returned. Check model visibility.");
+      throw new Error("El modelo aceptó la petición pero no devolvió audio. Prueba con 'Hola' para testear.");
     }
 
     return base64Audio;
