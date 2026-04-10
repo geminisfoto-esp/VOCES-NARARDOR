@@ -7,7 +7,7 @@ import { GenerationSettings, HistoryItem } from './types';
 import { VOICES } from './constants';
 import { generateSpeech, analyzeVoiceSample } from './services/geminiService';
 import { decodeBase64, decodeAudioData, createWavBlob } from './utils/audioUtils';
-import { AudioWaveform, Wand2, Loader2, Sparkles, AlertCircle, CheckCircle } from 'lucide-react';
+import { AudioWaveform, Wand2, Loader2, Sparkles, AlertCircle, CheckCircle, LogOut } from 'lucide-react';
 import { AuthGuard } from './components/AuthGuard';
 
 const App: React.FC = () => {
@@ -42,6 +42,11 @@ const App: React.FC = () => {
   React.useEffect(() => {
     localStorage.setItem('tts_settings', JSON.stringify(settings));
   }, [settings]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('app_auth_session');
+    window.location.reload();
+  };
 
   const handleGenerate = async () => {
     if (!text.trim()) return;
@@ -169,8 +174,14 @@ const App: React.FC = () => {
               <span>Status: Online</span>
               <span className="text-indigo-400/50">Model: v2.5-flash-native</span>
             </div>
-            <button className="p-2 text-slate-400 hover:text-white transition-colors">
-              <Sparkles size={20} />
+            
+            <button 
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-400/10 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all flex items-center gap-2 group border border-red-400/10"
+              title="Cerrar Sesión"
+            >
+              <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
+              <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">Cerrar Sesión</span>
             </button>
           </div>
         </div>
