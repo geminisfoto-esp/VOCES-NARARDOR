@@ -51,11 +51,14 @@ export async function generateSpeech(
     });
 
     const response = await result.response;
+    console.log("Full Gemini Response:", JSON.stringify(response));
+    
     const audioPart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
     const base64Audio = audioPart?.inlineData?.data;
 
     if (!base64Audio) {
-      throw new Error("El modelo aceptó la petición pero no devolvió audio. Prueba con 'Hola' para testear.");
+      const debugInfo = response.candidates?.[0]?.content?.parts?.[0]?.text || "No hay texto tampoco";
+      throw new Error(`El modelo respondió pero no envió audio. Respuesta de texto: ${debugInfo}`);
     }
 
     return base64Audio;
