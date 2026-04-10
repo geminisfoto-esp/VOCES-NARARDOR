@@ -41,7 +41,7 @@ export async function generateSpeech(
   try {
     // Usamos el modelo v1.5-flash que es el estandar oro para esta libreria
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
       generationConfig: {
         responseModalities: ["audio" as any],
         speechConfig: {
@@ -78,7 +78,7 @@ export interface VoiceAnalysisResult {
 }
 
 export async function analyzeVoiceSample(base64Audio: string): Promise<VoiceAnalysisResult> {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
   const result = await model.generateContent([
     { inlineData: { mimeType: 'audio/mp3', data: base64Audio } },
     { text: "Analyze this voice sample and return JSON with: gender, pitch, speed, style, accent." }
