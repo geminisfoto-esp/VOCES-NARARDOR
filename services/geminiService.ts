@@ -40,7 +40,7 @@ export async function generateSpeech(
 
   try {
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-flash-latest", 
+      model: "gemini-1.5-flash-002", 
     });
 
     const result = await model.generateContent({
@@ -81,7 +81,7 @@ export interface VoiceAnalysisResult {
 }
 
 export async function analyzeVoiceSample(base64Audio: string): Promise<VoiceAnalysisResult> {
-  const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-002" });
   const result = await model.generateContent([
     { inlineData: { mimeType: 'audio/mp3', data: base64Audio } },
     { text: "Analyze this voice sample and return JSON with: gender, pitch, speed, style, accent." }
