@@ -11,7 +11,9 @@ export async function generateSpeech(text: string, settings: GenerationSettings)
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      contents: [{ parts: [{ text }] }],
+      contents: [{ 
+        parts: [{ text: `Genera la narración de audio profesional para el siguiente texto, usando estilo narrador: ${text}` }] 
+      }],
       generationConfig: {
         responseModalities: ["audio"],
         speechConfig: {
