@@ -22,7 +22,7 @@ export async function generateSpeech(text: string, settings: GenerationSettings)
 
   try {
     const model = genAI.getGenerativeModel({ 
-      model: "models/gemini-2.0-flash", 
+      model: "models/gemini-2.5-flash-native-audio-latest", 
     });
 
     const result = await model.generateContent({
