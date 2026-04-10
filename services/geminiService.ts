@@ -2,7 +2,7 @@ import { GoogleGenAI, Modality, Type } from "@google/genai";
 import { GenerationSettings, VoiceOption } from "../types";
 import { VOICES, STYLES, ACCENTS } from "../constants";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
 export async function generateSpeech(
   text: string,
