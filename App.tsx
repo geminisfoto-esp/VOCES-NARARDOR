@@ -159,7 +159,7 @@ const App: React.FC = () => {
               </h1>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Powered by Gemini 1.5 Flash</p>
+                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Powered by Gemini 2.5 Native Audio</p>
               </div>
             </div>
           </div>
@@ -167,7 +167,7 @@ const App: React.FC = () => {
           <div className="flex items-center gap-6">
             <div className="hidden md:flex flex-col items-end text-[10px] font-medium text-slate-500 uppercase tracking-tighter">
               <span>Status: Online</span>
-              <span className="text-indigo-400/50">Model: v1.5-flash-latest</span>
+              <span className="text-indigo-400/50">Model: v2.5-flash-native</span>
             </div>
             <button className="p-2 text-slate-400 hover:text-white transition-colors">
               <Sparkles size={20} />
