@@ -92,7 +92,7 @@ export const History: React.FC<HistoryProps> = ({ items, onDelete }) => {
           
           <div className="flex-grow min-w-0 space-y-2">
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded-md">
+              <span className="text-[10px] font-black text-indigo-300 uppercase tracking-widest bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 rounded-md">
                 {item.settings.voiceName}
               </span>
               <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
@@ -117,7 +117,7 @@ export const History: React.FC<HistoryProps> = ({ items, onDelete }) => {
           </div>
 
           {/* Floating Actions */}
-          <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="flex flex-col gap-2 opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
             <button
               onClick={() => handleDownload(item)}
               className="p-3 bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-emerald-400 rounded-2xl border border-white/5 transition-all active:scale-95"

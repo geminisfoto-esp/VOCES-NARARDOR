@@ -5,6 +5,9 @@ import { TextInput } from './components/TextInput';
 import { History } from './components/History';
 import { GenerationSettings, HistoryItem } from './types';
 import { VOICES } from './constants';
+
+const VERIFIED_MALE_IDS = ['puck', 'charon', 'fenrir'];
+const VERIFIED_FEMALE_IDS = ['kore', 'zephyr'];
 import { generateSpeech, analyzeVoiceSample } from './services/geminiService';
 import { decodeBase64, decodeAudioData, createWavBlob } from './utils/audioUtils';
 import { AudioWaveform, Wand2, Loader2, Sparkles, AlertCircle, CheckCircle, LogOut } from 'lucide-react';
@@ -21,12 +24,13 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [importStatus, setImportStatus] = useState<{msg: string, type: 'success' | 'error'} | null>(null);
-  const [detectedGender, setDetectedGender] = useState<'male' | 'female' | null>(null);
+  const [recommendedVoiceId, setRecommendedVoiceId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const [settings, setSettings] = useState<GenerationSettings>(() => loadPersisted('tts_settings', {
-    voiceId: VOICES[0].id,
-    accent: 'España',
+    voiceId: 'charon',
+    language: 'Español',
+    voiceDescription: '',
     style: 'natural',
     speed: 1.0,
     pitch: 0,
@@ -111,8 +115,8 @@ const App: React.FC = () => {
   const handleVoiceImport = async (file: File) => {
     setAnalyzing(true);
     setImportStatus(null);
-    setDetectedGender(null);
-    
+    setRecommendedVoiceId(null);
+
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async () => {
@@ -120,21 +124,24 @@ const App: React.FC = () => {
         const base64Result = reader.result as string;
         const base64Data = base64Result.split(',')[1];
         const analysis = await analyzeVoiceSample(base64Data);
-        
-        const matchingVoices = VOICES.filter(v => v.gender === analysis.gender);
-        const bestVoice = matchingVoices.length > 0 ? matchingVoices[0] : VOICES[0];
 
-        setDetectedGender(analysis.gender);
-        setSettings({
+        // El emparejamiento por género solo se ofrece dentro del subconjunto
+        // de voces ya contrastadas por el usuario; el resto del catálogo no
+        // tiene género verificado.
+        const candidateIds = analysis.gender === 'male' ? VERIFIED_MALE_IDS : VERIFIED_FEMALE_IDS;
+        const bestVoice = VOICES.find(v => candidateIds.includes(v.id)) || VOICES[0];
+
+        setRecommendedVoiceId(bestVoice.id);
+        setSettings(s => ({
+          ...s,
           voiceId: bestVoice.id,
-          accent: analysis.accent,
           style: analysis.style,
           speed: analysis.speed,
-          pitch: analysis.pitch
-        });
+          pitch: analysis.pitch,
+        }));
 
         setImportStatus({
-          msg: `Análisis completado: Se detectó voz ${analysis.gender === 'male' ? 'MASCULINA' : 'FEMENINA'}.`,
+          msg: `Análisis completado: Se detectó voz ${analysis.gender === 'male' ? 'MASCULINA' : 'FEMENINA'}. Voz recomendada: ${bestVoice.name}.`,
           type: 'success'
         });
       } catch (err) {
@@ -155,27 +162,29 @@ const App: React.FC = () => {
       <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-indigo-500/10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4 group">
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20 group-hover:scale-110 group-hover:rotate-3 transition-transform">
               <AudioWaveform className="text-white" size={24} />
             </div>
             <div>
               <h1 className="text-2xl font-black tracking-tight bg-gradient-to-r from-white via-indigo-100 to-slate-400 bg-clip-text text-transparent">
                 Voces Narrador
               </h1>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Powered by Gemini 2.5 Native Audio</p>
+                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Gemini 2.5 Native Audio</p>
+                <span className="hidden sm:inline text-slate-700">·</span>
+                <p className="hidden sm:block text-[10px] font-bold text-slate-500 uppercase tracking-widest">30 voces · Multi-idioma</p>
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-6">
             <div className="hidden md:flex flex-col items-end text-[10px] font-medium text-slate-500 uppercase tracking-tighter">
               <span>Status: Online</span>
               <span className="text-indigo-400/50">Model: v2.5-flash-native</span>
             </div>
-            
-            <button 
+
+            <button
               onClick={handleLogout}
               className="px-4 py-2 bg-red-400/10 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all flex items-center gap-2 group border border-red-400/10"
               title="Cerrar Sesión"
@@ -206,12 +215,12 @@ const App: React.FC = () => {
                 )}
               </div>
 
-              <VoiceSelector 
-                selectedVoiceId={settings.voiceId} 
+              <VoiceSelector
+                selectedVoiceId={settings.voiceId}
                 onSelect={(id) => setSettings(s => ({ ...s, voiceId: id }))}
                 onImport={handleVoiceImport}
                 isAnalyzing={analyzing}
-                detectedGender={detectedGender}
+                recommendedVoiceId={recommendedVoiceId}
               />
               
               {importStatus && (

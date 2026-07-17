@@ -1,35 +1,53 @@
 import { VoiceOption } from './types';
 
+// Las 30 voces reales del modelo de audio nativo de Gemini
+// (https://ai.google.dev/gemini-api/docs/speech-generation), con su
+// descriptor de carácter oficial traducido.
 export const VOICES: VoiceOption[] = [
-  // --- HOMBRES (10) ---
-  { id: 'm1', name: 'Adrián (Madrid-Centro)', gender: 'male', apiVoiceName: 'Puck' },
-  { id: 'm2', name: 'Alfonso (Toledo-Clásico)', gender: 'male', apiVoiceName: 'Charon' },
-  { id: 'm3', name: 'Rodrigo (Castellano)', gender: 'male', apiVoiceName: 'Fenrir' },
-  { id: 'm4', name: 'Sergio (Joven Madrid)', gender: 'male', apiVoiceName: 'Puck' },
-  { id: 'm5', name: 'Mariano (Narrador Toledo)', gender: 'male', apiVoiceName: 'Charon' },
-  { id: 'm6', name: 'Víctor (Enérgico)', gender: 'male', apiVoiceName: 'Fenrir' },
-  { id: 'm7', name: 'Pablo (Suave)', gender: 'male', apiVoiceName: 'Puck' },
-  { id: 'm8', name: 'Ignacio (Formal)', gender: 'male', apiVoiceName: 'Charon' },
-  { id: 'm9', name: 'Fernando (Autoritario)', gender: 'male', apiVoiceName: 'Fenrir' },
-  { id: 'm10', name: 'Dani (Amistoso)', gender: 'male', apiVoiceName: 'Puck' },
-  
-  // --- MUJERES (10) ---
-  { id: 'f1', name: 'Jimena (Madrid-Ventas)', gender: 'female', apiVoiceName: 'Kore' },
-  { id: 'f2', name: 'Beatriz (Toledo-Casco)', gender: 'female', apiVoiceName: 'Zephyr' },
-  { id: 'f3', name: 'Lucía (Castellana)', gender: 'female', apiVoiceName: 'Kore' },
-  { id: 'f4', name: 'Clara (Serena)', gender: 'female', apiVoiceName: 'Zephyr' },
-  { id: 'f5', name: 'Isabel (Profesional)', gender: 'female', apiVoiceName: 'Kore' },
-  { id: 'f6', name: 'Marta (Joven Capital)', gender: 'female', apiVoiceName: 'Zephyr' },
-  { id: 'f7', name: 'Pilar (Madura Toledo)', gender: 'female', apiVoiceName: 'Kore' },
-  { id: 'f8', name: 'Elena (Pausada)', gender: 'female', apiVoiceName: 'Zephyr' },
-  { id: 'f9', name: 'Sara (Dinámica)', gender: 'female', apiVoiceName: 'Kore' },
-  { id: 'f10', name: 'Inés (Tradicional)', gender: 'female', apiVoiceName: 'Zephyr' },
+  { id: 'zephyr', name: 'Zephyr', descriptor: 'Brillante', apiVoiceName: 'Zephyr' },
+  { id: 'puck', name: 'Puck', descriptor: 'Enérgica', apiVoiceName: 'Puck' },
+  { id: 'charon', name: 'Charon', descriptor: 'Informativa', apiVoiceName: 'Charon' },
+  { id: 'kore', name: 'Kore', descriptor: 'Firme', apiVoiceName: 'Kore' },
+  { id: 'fenrir', name: 'Fenrir', descriptor: 'Excitable', apiVoiceName: 'Fenrir' },
+  { id: 'leda', name: 'Leda', descriptor: 'Juvenil', apiVoiceName: 'Leda' },
+  { id: 'orus', name: 'Orus', descriptor: 'Firme', apiVoiceName: 'Orus' },
+  { id: 'aoede', name: 'Aoede', descriptor: 'Desenfadada', apiVoiceName: 'Aoede' },
+  { id: 'callirrhoe', name: 'Callirrhoe', descriptor: 'Relajada', apiVoiceName: 'Callirrhoe' },
+  { id: 'autonoe', name: 'Autonoe', descriptor: 'Brillante', apiVoiceName: 'Autonoe' },
+  { id: 'enceladus', name: 'Enceladus', descriptor: 'Susurrante', apiVoiceName: 'Enceladus' },
+  { id: 'iapetus', name: 'Iapetus', descriptor: 'Clara', apiVoiceName: 'Iapetus' },
+  { id: 'umbriel', name: 'Umbriel', descriptor: 'Relajada', apiVoiceName: 'Umbriel' },
+  { id: 'algieba', name: 'Algieba', descriptor: 'Suave', apiVoiceName: 'Algieba' },
+  { id: 'despina', name: 'Despina', descriptor: 'Suave', apiVoiceName: 'Despina' },
+  { id: 'erinome', name: 'Erinome', descriptor: 'Clara', apiVoiceName: 'Erinome' },
+  { id: 'algenib', name: 'Algenib', descriptor: 'Rasgada', apiVoiceName: 'Algenib' },
+  { id: 'rasalgethi', name: 'Rasalgethi', descriptor: 'Informativa', apiVoiceName: 'Rasalgethi' },
+  { id: 'laomedeia', name: 'Laomedeia', descriptor: 'Enérgica', apiVoiceName: 'Laomedeia' },
+  { id: 'achernar', name: 'Achernar', descriptor: 'Suave', apiVoiceName: 'Achernar' },
+  { id: 'alnilam', name: 'Alnilam', descriptor: 'Firme', apiVoiceName: 'Alnilam' },
+  { id: 'schedar', name: 'Schedar', descriptor: 'Neutra', apiVoiceName: 'Schedar' },
+  { id: 'gacrux', name: 'Gacrux', descriptor: 'Madura', apiVoiceName: 'Gacrux' },
+  { id: 'pulcherrima', name: 'Pulcherrima', descriptor: 'Directa', apiVoiceName: 'Pulcherrima' },
+  { id: 'achird', name: 'Achird', descriptor: 'Amistosa', apiVoiceName: 'Achird' },
+  { id: 'zubenelgenubi', name: 'Zubenelgenubi', descriptor: 'Casual', apiVoiceName: 'Zubenelgenubi' },
+  { id: 'vindemiatrix', name: 'Vindemiatrix', descriptor: 'Gentil', apiVoiceName: 'Vindemiatrix' },
+  { id: 'sadachbia', name: 'Sadachbia', descriptor: 'Vivaz', apiVoiceName: 'Sadachbia' },
+  { id: 'sadaltager', name: 'Sadaltager', descriptor: 'Erudita', apiVoiceName: 'Sadaltager' },
+  { id: 'sulafat', name: 'Sulafat', descriptor: 'Cálida', apiVoiceName: 'Sulafat' },
 ];
 
-export const ACCENTS = [
-  { id: 'madrid', label: 'Madrid (Castizo)', description: 'Entonación directa, pronunciación clara de la s, y el toque característico de la capital.' },
-  { id: 'toledo', label: 'Toledo (Castellano)', description: 'Un castellano muy puro y sobrio, con un ritmo pausado típico de Castilla-La Mancha.' },
-  { id: 'espana', label: 'España (Norte)', description: 'Acento del norte/estándar de la península, muy articulado.' },
+// Subconjunto verificado por el usuario para el detector automático de
+// voz por audio (analyze-voice) — el resto del catálogo no se ha
+// contrastado con detección de género real.
+export const VERIFIED_VOICE_IDS = ['puck', 'charon', 'fenrir', 'kore', 'zephyr'];
+
+export const LANGUAGES = [
+  { id: 'es', label: 'Español' },
+  { id: 'en', label: 'Inglés' },
+  { id: 'fr', label: 'Francés' },
+  { id: 'de', label: 'Alemán' },
+  { id: 'it', label: 'Italiano' },
+  { id: 'pt', label: 'Portugués' },
 ];
 
 export const STYLES = [

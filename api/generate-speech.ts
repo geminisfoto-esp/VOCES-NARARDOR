@@ -1,5 +1,5 @@
 import { requireSession } from './_lib/session.js';
-import { VOICES, ACCENTS } from '../constants.js';
+import { VOICES } from '../constants.js';
 import type { GenerationSettings } from '../types.js';
 
 const TTS_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent';
@@ -21,7 +21,8 @@ export default async function handler(req: any, res: any) {
   }
 
   const voice = VOICES.find(v => v.id === settings.voiceId) || VOICES[0];
-  const accentDetail = ACCENTS.find(a => a.label === settings.accent) || ACCENTS[0];
+  const language = settings.language?.trim() || 'Español';
+  const voiceDescription = settings.voiceDescription?.trim();
 
   let speedDesc = 'normal';
   if (settings.speed < 0.8) speedDesc = 'muy lenta';
@@ -37,11 +38,10 @@ export default async function handler(req: any, res: any) {
 
   const prompt = `
     Por favor, lee el siguiente texto en voz alta.
-    Es CRÍTICO que utilices un acento español de España, específicamente de la zona centro (Castilla).
 
-    Instrucciones de Dirección de Voz Regional:
-    - Región Específica: ${settings.accent}.
-    - Detalle de Acento: ${accentDetail.description}
+    Instrucciones de Dirección de Voz:
+    - Idioma objetivo: ${language}. Genera el audio en este idioma; si el texto ya está escrito en otro idioma, respeta el idioma del texto en su lugar.
+    ${voiceDescription ? `- Perfil de la voz: ${voiceDescription}.` : ''}
     - Estilo: ${settings.style}
     - Velocidad: ${speedDesc}
     - Tono: ${pitchDesc}

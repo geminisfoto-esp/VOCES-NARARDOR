@@ -1,7 +1,7 @@
 export interface VoiceOption {
   id: string;
   name: string;
-  gender: 'male' | 'female';
+  descriptor: string; // Character adjective, e.g. "Firme", "Cálida"
   apiVoiceName: string; // The actual name sent to Gemini (Puck, Kore, etc.)
 }
 
@@ -19,7 +19,8 @@ export interface HistoryItem {
 
 export interface GenerationSettings {
   voiceId: string;
-  accent: string;
+  language: string;
+  voiceDescription: string; // free text: age/character, e.g. "niña de 9 años, alegre"
   style: string;
   speed: number; // 0.5 to 2.0
   pitch: number; // -10 to 10
