@@ -11,7 +11,12 @@ export async function generateSpeech(text: string, settings: GenerationSettings,
 
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(data.error || 'Error en la conexión con Google');
+    const err = new Error(data.error || 'Error en la conexión con Google');
+    // El servidor responde 499 cuando aborta la generación (cancelación del
+    // cliente o límite de seguridad) — se marca igual que un AbortError
+    // nativo del navegador para que la UI lo trate de forma consistente.
+    if (response.status === 499) err.name = 'AbortError';
+    throw err;
   }
 
   return data.audio;
