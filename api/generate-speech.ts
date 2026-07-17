@@ -4,6 +4,17 @@ import type { GenerationSettings } from '../types.js';
 
 const TTS_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent';
 
+// Seed estable derivada de la voz + ajustes (no del texto), para que
+// distintas narraciones con los mismos parámetros suenen consistentes
+// entre sí. Gemini documenta `seed` como "mejor esfuerzo", no exacto.
+function stableSeed(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash * 31 + input.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -58,6 +69,10 @@ export default async function handler(req: any, res: any) {
     "${text}"
   `;
 
+  const seed = stableSeed(
+    [voice.apiVoiceName, language, voiceDescription || '', settings.style, settings.speed, settings.pitch].join('|')
+  );
+
   try {
     const response = await fetch(`${TTS_URL}?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
@@ -66,6 +81,7 @@ export default async function handler(req: any, res: any) {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           responseModalities: ['audio'],
+          seed,
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: voice.apiVoiceName } },
           },
