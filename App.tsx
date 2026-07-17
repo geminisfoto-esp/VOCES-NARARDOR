@@ -26,6 +26,7 @@ const App: React.FC = () => {
   const [importStatus, setImportStatus] = useState<{msg: string, type: 'success' | 'error'} | null>(null);
   const [recommendedVoiceId, setRecommendedVoiceId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const abortControllerRef = React.useRef<AbortController | null>(null);
 
   const defaultSettings: GenerationSettings = {
     voiceId: 'charon',
@@ -60,10 +61,13 @@ const App: React.FC = () => {
   const handleGenerate = async () => {
     if (!text.trim()) return;
 
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setLoading(true);
     setImportStatus(null);
     try {
-      const base64Audio = await generateSpeech(text, settings);
+      const base64Audio = await generateSpeech(text, settings, controller.signal);
       const audioBytes = decodeBase64(base64Audio);
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       const audioBuffer = await decodeAudioData(audioBytes, audioContext);
@@ -95,6 +99,10 @@ const App: React.FC = () => {
       audio.play();
 
     } catch (error: any) {
+      if (error.name === 'AbortError') {
+        setImportStatus({ msg: 'Generación cancelada.', type: 'error' });
+        return;
+      }
       console.error("Gemini TTS Error:", error);
       if (error.status === 403) alert("Error: Acceso denegado (403). Revisa tu facturación en Google Cloud.");
       else if (error.status === 404) alert("Error: El modelo todavía no está disponible en tu zona (404). Espera un momento.");
@@ -104,7 +112,12 @@ const App: React.FC = () => {
       }
     } finally {
       setLoading(false);
+      abortControllerRef.current = null;
     }
+  };
+
+  const handleCancelGenerate = () => {
+    abortControllerRef.current?.abort();
   };
 
   const deleteHistory = (id: string) => {
@@ -275,6 +288,14 @@ const App: React.FC = () => {
                     )}
                   </span>
                 </button>
+                {loading && (
+                  <button
+                    onClick={handleCancelGenerate}
+                    className="w-full py-3 text-xs font-black uppercase tracking-widest text-red-400 hover:text-white hover:bg-red-500/80 border border-red-400/20 rounded-xl transition-all active:scale-[0.98]"
+                  >
+                    Cancelar generación
+                  </button>
+                )}
                 <div className="flex items-center justify-center gap-4 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
                   <span>Soporta etiquetas de emoción</span>
                   <span className="h-1 w-1 rounded-full bg-slate-700" />

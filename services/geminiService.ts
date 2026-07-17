@@ -1,11 +1,12 @@
 import { GenerationSettings } from "../types";
 
-export async function generateSpeech(text: string, settings: GenerationSettings): Promise<string> {
+export async function generateSpeech(text: string, settings: GenerationSettings, signal?: AbortSignal): Promise<string> {
   const response = await fetch('/api/generate-speech', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify({ text, settings }),
+    signal,
   });
 
   const data = await response.json();

@@ -75,10 +75,19 @@ export default async function handler(req: any, res: any) {
     [voice.apiVoiceName, language, voiceDescription || '', settings.style, settings.speed, settings.pitch, temperature].join('|')
   );
 
+  // Corta la petición a Gemini si el cliente cancela (cierra la conexión)
+  // o si se pasa de un límite de seguridad, para no seguir gastando
+  // cuota en una generación que ya nadie espera.
+  const upstreamController = new AbortController();
+  const onClientClose = () => upstreamController.abort();
+  req.on?.('close', onClientClose);
+  const safetyTimeout = setTimeout(() => upstreamController.abort(), 45_000);
+
   try {
     const response = await fetch(`${TTS_URL}?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: upstreamController.signal,
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
@@ -104,6 +113,13 @@ export default async function handler(req: any, res: any) {
 
     return res.status(200).json({ audio: base64Audio });
   } catch (error: any) {
+    if (res.headersSent || res.writableEnded) return;
+    if (error.name === 'AbortError') {
+      return res.status(499).json({ error: 'Generación cancelada' });
+    }
     return res.status(500).json({ error: error.message || 'Error desconocido' });
+  } finally {
+    clearTimeout(safetyTimeout);
+    req.off?.('close', onClientClose);
   }
 }
