@@ -108,6 +108,17 @@ export default async function handler(req: any, res: any) {
 
     const base64Audio = data.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData)?.inlineData?.data;
     if (!base64Audio) {
+      // Diagnóstico: qué devolvió Gemini realmente (finishReason, texto en
+      // vez de audio, bloqueo de seguridad, etc.) — visible en Vercel Logs.
+      console.error('Gemini no devolvió audio. Respuesta completa:', JSON.stringify({
+        finishReason: data.candidates?.[0]?.finishReason,
+        safetyRatings: data.candidates?.[0]?.safetyRatings,
+        promptFeedback: data.promptFeedback,
+        parts: data.candidates?.[0]?.content?.parts,
+        seed,
+        temperature,
+        voice: voice.apiVoiceName,
+      }));
       return res.status(502).json({ error: 'El modelo no devolvió audio. Verifica tu configuración en Google Cloud.' });
     }
 
