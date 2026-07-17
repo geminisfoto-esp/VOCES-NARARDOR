@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, User, Key, ArrowRight, ShieldCheck, AlertCircle, Mail, RotateCcw, Loader2 } from 'lucide-react';
-import { sendVerificationCode } from '../services/emailService';
+import { Lock, User, Key, ArrowRight, ShieldCheck, Mail, Loader2 } from 'lucide-react';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -9,68 +8,71 @@ interface AuthGuardProps {
 export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const [step, setStep] = useState<'login' | 'verify'>('login');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [generatedCode, setGeneratedCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Obtener credenciales de las variables de entorno
-  const validUser = import.meta.env.VITE_APP_USER;
-  const validPass = import.meta.env.VITE_APP_PASSWORD;
-  const targetEmail = "geminisfoto@gmail.com";
-
-  // Si no hay variables configuradas, permitimos el acceso
-  const isSecurityConfigured = validUser && validPass;
-
   useEffect(() => {
-    const session = localStorage.getItem('app_auth_session');
-    if (session === 'true' || !isSecurityConfigured) {
-      setIsAuthenticated(true);
-    }
-  }, [isSecurityConfigured]);
+    fetch('/api/session')
+      .then(r => r.json())
+      .then(data => setIsAuthenticated(Boolean(data.authenticated)))
+      .catch(() => setIsAuthenticated(false))
+      .finally(() => setCheckingSession(false));
+  }, []);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === validUser && password === validPass) {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        // Generar código de 6 dígitos
-        const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-        setGeneratedCode(newCode);
+    setLoading(true);
+    setError(null);
 
-        // Enviar por email
-        const success = await sendVerificationCode(targetEmail, newCode);
-        
-        if (success) {
-          setStep('verify');
-        } else {
-          setError('Error al enviar el código. Revisa VITE_RESEND_API_KEY en Vercel.');
-        }
-      } catch (err) {
-        setError('Ocurrió un problema con el sistema de verificación.');
-      } finally {
-        setLoading(false);
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        setStep('verify');
+      } else {
+        setError(data.error || 'Credenciales incorrectas');
       }
-    } else {
-      setError('Credenciales incorrectas');
+    } catch (err) {
+      setError('Ocurrió un problema con el sistema de verificación.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleVerifySubmit = (e: React.FormEvent) => {
+  const handleVerifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (verificationCode === generatedCode) {
-      localStorage.setItem('app_auth_session', 'true');
-      setIsAuthenticated(true);
-      setError(null);
-    } else {
-      setError('Código de verificación incorrecto');
+    setError(null);
+
+    try {
+      const response = await fetch('/api/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ code: verificationCode }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsAuthenticated(true);
+      } else {
+        setError(data.error || 'Código de verificación incorrecto');
+      }
+    } catch (err) {
+      setError('Ocurrió un problema con el sistema de verificación.');
     }
   };
 
+  if (checkingSession) return null;
   if (isAuthenticated) return <>{children}</>;
 
   return (
@@ -81,7 +83,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
       </div>
 
       <div className="login-card w-full max-w-md relative z-10 glass-panel p-10 rounded-[2.5rem] border border-white/5 shadow-2xl space-y-8 animate-in fade-in zoom-in duration-500">
-        
+
         {step === 'login' ? (
           <>
             <div className="text-center space-y-3">
@@ -153,7 +155,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
               </div>
               <h2 className="text-3xl font-black text-white tracking-tight">Verificación 2FA</h2>
               <p className="text-slate-400 text-sm font-medium">
-                Hemos enviado un código a <span className="text-indigo-400">geminisfoto@gmail.com</span>
+                Hemos enviado un código a tu email registrado
               </p>
             </div>
 
@@ -183,9 +185,9 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
                   <span>Verificar Acceso</span>
                   <ShieldCheck size={18} />
                 </button>
-                
-                <button 
-                  type="button" 
+
+                <button
+                  type="button"
                   onClick={() => setStep('login')}
                   className="w-full text-[10px] font-bold text-slate-600 hover:text-slate-400 transition-colors uppercase tracking-widest"
                 >

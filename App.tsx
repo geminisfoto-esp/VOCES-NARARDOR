@@ -43,8 +43,8 @@ const App: React.FC = () => {
     localStorage.setItem('tts_settings', JSON.stringify(settings));
   }, [settings]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('app_auth_session');
+  const handleLogout = async () => {
+    await fetch('/api/logout', { method: 'POST', credentials: 'include' });
     window.location.reload();
   };
 

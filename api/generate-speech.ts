@@ -1,0 +1,90 @@
+import { requireSession } from './_lib/session';
+import { VOICES, ACCENTS } from '../constants';
+import type { GenerationSettings } from '../types';
+
+const TTS_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent';
+
+export default async function handler(req: any, res: any) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const secret = process.env.SESSION_SECRET;
+  const configured = Boolean(process.env.APP_USER && process.env.APP_PASSWORD && secret);
+  if (configured && !requireSession(req, secret as string)) {
+    return res.status(401).json({ error: 'No autenticado' });
+  }
+
+  const { text, settings } = req.body as { text: string; settings: GenerationSettings };
+  if (!text?.trim()) {
+    return res.status(400).json({ error: 'Falta el texto a narrar' });
+  }
+
+  const voice = VOICES.find(v => v.id === settings.voiceId) || VOICES[0];
+  const accentDetail = ACCENTS.find(a => a.label === settings.accent) || ACCENTS[0];
+
+  let speedDesc = 'normal';
+  if (settings.speed < 0.8) speedDesc = 'muy lenta';
+  else if (settings.speed < 1.0) speedDesc = 'lenta';
+  else if (settings.speed > 1.5) speedDesc = 'muy rápida';
+  else if (settings.speed > 1.0) speedDesc = 'rápida';
+
+  let pitchDesc = 'normal';
+  if (settings.pitch < -5) pitchDesc = 'muy grave y profundo';
+  else if (settings.pitch < 0) pitchDesc = 'grave';
+  else if (settings.pitch > 5) pitchDesc = 'muy agudo';
+  else if (settings.pitch > 0) pitchDesc = 'agudo';
+
+  const prompt = `
+    Por favor, lee el siguiente texto en voz alta.
+    Es CRÍTICO que utilices un acento español de España, específicamente de la zona centro (Castilla).
+
+    Instrucciones de Dirección de Voz Regional:
+    - Región Específica: ${settings.accent}.
+    - Detalle de Acento: ${accentDetail.description}
+    - Estilo: ${settings.style}
+    - Velocidad: ${speedDesc}
+    - Tono: ${pitchDesc}
+
+    Instrucciones de Etiquetas Especiales:
+    - [pausa]: Silencio de 2 segundos.
+    - [risa]: Inserta una risa natural.
+    - [grito]: Voz enérgica y exclamativa.
+    - [llanto]: Voz quebrada.
+    - [susurro]: Voz baja y sibilante.
+    - [aplausos]: Sonido de ambiente de aplausos.
+
+    Texto a leer:
+    "${text}"
+  `;
+
+  try {
+    const response = await fetch(`${TTS_URL}?key=${process.env.GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseModalities: ['audio'],
+          speechConfig: {
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: voice.apiVoiceName } },
+          },
+        },
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({ error: data.error?.message || 'Error en la conexión con Google' });
+    }
+
+    const base64Audio = data.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData)?.inlineData?.data;
+    if (!base64Audio) {
+      return res.status(502).json({ error: 'El modelo no devolvió audio. Verifica tu configuración en Google Cloud.' });
+    }
+
+    return res.status(200).json({ audio: base64Audio });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message || 'Error desconocido' });
+  }
+}
