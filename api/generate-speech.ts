@@ -69,8 +69,10 @@ export default async function handler(req: any, res: any) {
     "${text}"
   `;
 
+  const temperature = typeof settings.temperature === 'number' ? settings.temperature : 0.6;
+
   const seed = stableSeed(
-    [voice.apiVoiceName, language, voiceDescription || '', settings.style, settings.speed, settings.pitch].join('|')
+    [voice.apiVoiceName, language, voiceDescription || '', settings.style, settings.speed, settings.pitch, temperature].join('|')
   );
 
   try {
@@ -82,9 +84,7 @@ export default async function handler(req: any, res: any) {
         generationConfig: {
           responseModalities: ['audio'],
           seed,
-          // Temperatura baja para reducir la variación de timbre/entonación
-          // entre textos distintos con la misma voz (experimental).
-          temperature: 0.6,
+          temperature,
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: voice.apiVoiceName } },
           },

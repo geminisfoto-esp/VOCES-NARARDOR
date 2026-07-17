@@ -27,14 +27,19 @@ const App: React.FC = () => {
   const [recommendedVoiceId, setRecommendedVoiceId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const [settings, setSettings] = useState<GenerationSettings>(() => loadPersisted('tts_settings', {
+  const defaultSettings: GenerationSettings = {
     voiceId: 'charon',
     language: 'Español',
     voiceDescription: '',
     style: 'natural',
     speed: 1.0,
     pitch: 0,
-  }));
+    temperature: 0.6,
+  };
+
+  const [settings, setSettings] = useState<GenerationSettings>(
+    () => ({ ...defaultSettings, ...loadPersisted('tts_settings', {}) })
+  );
   
   const [history, setHistory] = useState<HistoryItem[]>([]);
 

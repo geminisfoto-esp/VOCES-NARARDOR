@@ -153,6 +153,37 @@ export const Controls: React.FC<ControlsProps> = ({ settings, onChange }) => {
         </div>
       </div>
 
+      {/* Consistency / Temperature Slider */}
+      <div className="space-y-5 md:col-span-2">
+        <div className="flex justify-between items-end px-1">
+          <div className="flex items-center gap-2">
+             <span className="h-1 w-1 rounded-full bg-indigo-500" />
+             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Consistencia de la Voz</label>
+          </div>
+          <span className="bg-indigo-500/10 text-indigo-400 text-[10px] font-black px-2 py-1 rounded-md border border-indigo-500/20">
+            {settings.temperature.toFixed(1)}
+          </span>
+        </div>
+        <div className="relative group px-1">
+          <input
+            type="range"
+            min="0"
+            max="1.5"
+            step="0.1"
+            value={settings.temperature}
+            onChange={(e) => handleChange('temperature', parseFloat(e.target.value))}
+            className="w-full h-1.5 bg-slate-800 rounded-full appearance-none cursor-pointer accent-indigo-500 transition-all group-hover:bg-slate-700"
+          />
+          <div className="flex justify-between mt-3 text-[9px] font-black text-slate-600 uppercase tracking-tighter">
+            <span>Fiel / Consistente</span>
+            <span>Variable / Creativa</span>
+          </div>
+        </div>
+        <p className="text-[10px] text-slate-600 px-1">
+          Baja = suena más parecido entre generaciones distintas con la misma voz. Alta = más variación e improvisación en cada toma.
+        </p>
+      </div>
+
     </div>
   );
 };

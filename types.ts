@@ -24,6 +24,7 @@ export interface GenerationSettings {
   style: string;
   speed: number; // 0.5 to 2.0
   pitch: number; // -10 to 10
+  temperature: number; // 0 (fiel/consistente) to 2 (variable/creativa) — pasa directo a generationConfig.temperature de Gemini
 }
 
 export type TagType = '[pausa]' | '[risa]' | '[grito]' | '[llanto]' | '[susurro]' | '[aplausos]';
