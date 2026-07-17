@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { SPECIAL_TAGS } from '../constants';
-import { Smile, Frown, Megaphone, PauseCircle, Wind, PartyPopper } from 'lucide-react';
+import { Smile, Frown, Megaphone, PauseCircle, Wind, PartyPopper, Trash2 } from 'lucide-react';
 import { TagType } from '../types';
 
 interface TextInputProps {
@@ -70,8 +70,19 @@ export const TextInput: React.FC<TextInputProps> = ({ value, onChange, disabled 
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
           placeholder="Comienza a escribir tu guion aquí..."
-          className="w-full h-56 bg-white/[0.02] backdrop-blur-sm border border-white/10 rounded-3xl p-6 text-slate-100 placeholder-slate-600 focus:border-indigo-500/50 focus:bg-white/[0.04] outline-none resize-none transition-all scrollbar-hide"
+          className="w-full h-56 bg-white/[0.02] backdrop-blur-sm border border-white/10 rounded-3xl p-6 pr-14 text-slate-100 placeholder-slate-600 focus:border-indigo-500/50 focus:bg-white/[0.04] outline-none resize-none transition-all scrollbar-hide"
         />
+        {value.length > 0 && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            disabled={disabled}
+            title="Borrar texto"
+            className="absolute top-4 right-4 p-2 rounded-xl bg-slate-900/60 text-slate-500 hover:text-red-400 hover:bg-red-500/10 border border-white/5 transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
+          >
+            <Trash2 size={16} />
+          </button>
+        )}
         <div className="absolute bottom-4 right-6 flex items-center gap-3">
           <div className="flex flex-col items-end">
              <span className={`text-[10px] font-black tracking-widest ${value.length > 500 ? 'text-amber-500' : 'text-slate-500'}`}>
