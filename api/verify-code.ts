@@ -1,4 +1,4 @@
-import { verifyToken, readCookie, makeToken, setCookie, clearCookie } from './_lib/session';
+import { verifyToken, readCookie, makeToken, setCookie, clearCookie } from './_lib/session.js';
 
 const SESSION_TTL_SEC = 7 * 24 * 60 * 60;
 

@@ -1,4 +1,4 @@
-import { requireSession } from './_lib/session';
+import { requireSession } from './_lib/session.js';
 
 const ANALYZE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 

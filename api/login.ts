@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import { makeToken, setCookie } from './_lib/session';
+import { makeToken, setCookie } from './_lib/session.js';
 
 const TARGET_EMAIL = 'geminisfoto@gmail.com';
 const PENDING_TTL_SEC = 5 * 60;

@@ -1,6 +1,6 @@
-import { requireSession } from './_lib/session';
-import { VOICES, ACCENTS } from '../constants';
-import type { GenerationSettings } from '../types';
+import { requireSession } from './_lib/session.js';
+import { VOICES, ACCENTS } from '../constants.js';
+import type { GenerationSettings } from '../types.js';
 
 const TTS_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent';
 
